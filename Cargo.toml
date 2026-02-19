@@ -1,0 +1,15 @@
+[package]
+name = "ratspatcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ratatui = "0.30.0"
+crossterm = "0.29"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+tui-input = "0.15"
+color-eyre = "0.6"
+dirs = "6"
