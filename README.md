@@ -12,10 +12,15 @@ Built with [ratatui](https://github.com/ratatui/ratatui) and powered by the [Git
 - **Run monitoring** -- View the 30 most recent workflow runs in a color-coded table with status, branch, and timestamps.
 - **Background loading** -- Workflow and run data loads in background threads so the UI stays responsive.
 
-## Prerequisites
+## Install
 
-- **Rust** toolchain (edition 2024)
-- **GitHub CLI** (`gh`) installed and authenticated
+```bash
+cargo install ratspatcher
+```
+
+### Prerequisites
+
+The **GitHub CLI** (`gh`) must be installed and authenticated:
 
 ```bash
 # install gh if needed
@@ -26,17 +31,13 @@ brew install gh       # macOS
 gh auth login
 ```
 
-## Install & Run
+### Building from source
 
 ```bash
+git clone https://github.com/ChristianPavilonis/ratspatcher.git
+cd ratspatcher
 cargo build --release
 ./target/release/ratspatcher
-```
-
-Or run directly during development:
-
-```bash
-cargo run
 ```
 
 ## Keybindings
