@@ -66,6 +66,7 @@ impl Component for RunList {
             KeyCode::Tab => Action::TabWorkflows,
             KeyCode::Char('q') => Action::Quit,
             KeyCode::Char('r') => Action::Refresh,
+            KeyCode::Char('R') => Action::RerunLastWorkflow,
             _ => Action::Noop,
         }
     }

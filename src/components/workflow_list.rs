@@ -78,6 +78,7 @@ impl Component for WorkflowList {
             KeyCode::Tab => Action::TabRuns,
             KeyCode::Char('q') => Action::Quit,
             KeyCode::Char('r') => Action::Refresh,
+            KeyCode::Char('R') => Action::RerunLastWorkflow,
             _ => Action::Noop,
         }
     }

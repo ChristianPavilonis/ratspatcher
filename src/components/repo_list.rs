@@ -71,6 +71,7 @@ impl Component for RepoList {
             KeyCode::Enter | KeyCode::Char('l') | KeyCode::Right => Action::FocusMain,
             KeyCode::Char('q') => Action::Quit,
             KeyCode::Char('r') => Action::Refresh,
+            KeyCode::Char('R') => Action::RerunLastWorkflow,
             _ => Action::Noop,
         }
     }

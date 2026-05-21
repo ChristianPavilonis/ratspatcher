@@ -9,6 +9,7 @@ Built with [ratatui](https://github.com/ratatui/ratatui) and powered by the [Git
 - **Repo management** -- Add and remove GitHub repos from a persistent sidebar. Repos are saved to `~/.config/ratspatcher/repos.json`.
 - **Workflow discovery** -- Automatically finds dispatchable workflows (`workflow_dispatch`) and parses their input definitions (string, boolean, choice, environment).
 - **Dispatch form** -- Fill in branch/ref and all workflow inputs through a terminal form with validation.
+- **Rerun last dispatch** -- Trigger the most recent successful workflow dispatch again with the same repo, ref, and inputs for the current app session.
 - **Run monitoring** -- View the 30 most recent workflow runs in a color-coded table with status, branch, and timestamps.
 - **Background loading** -- Workflow and run data loads in background threads so the UI stays responsive.
 
@@ -50,6 +51,7 @@ cargo build --release
 | `q` | Quit (from sidebar) |
 | `Tab` | Switch between Workflows / Runs tabs |
 | `r` | Refresh data |
+| `R` / `Shift+r` | Rerun the last successful workflow dispatch from this app session |
 
 ### Navigation
 
@@ -86,3 +88,5 @@ Repos are persisted at `~/.config/ratspatcher/repos.json` as a JSON array:
 ```
 
 No other configuration is needed. The app manages this file through the Add/Remove repo UI.
+
+The last-dispatch rerun shortcut is kept in memory only for the current app session and is not written to configuration.

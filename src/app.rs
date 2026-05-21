@@ -45,6 +45,15 @@ pub enum MainTab {
     Runs,
 }
 
+/// The most recent successful workflow dispatch in this app session.
+#[derive(Debug, Clone)]
+struct LastDispatch {
+    repo_full_name: String,
+    workflow_name: String,
+    ref_name: String,
+    inputs: Vec<(String, String)>,
+}
+
 pub struct App {
     pub running: bool,
     pub focus: Focus,
@@ -67,6 +76,7 @@ pub struct App {
     workflow_cache: HashMap<String, Vec<Workflow>>,
     run_cache: HashMap<String, Vec<WorkflowRun>>,
     default_branches: HashMap<String, String>,
+    last_dispatch: Option<LastDispatch>,
 
     // Background task channel
     bg_tx: mpsc::Sender<BgResult>,
@@ -100,6 +110,7 @@ impl App {
             workflow_cache: HashMap::new(),
             run_cache: HashMap::new(),
             default_branches: HashMap::new(),
+            last_dispatch: None,
             bg_tx,
             bg_rx,
             current_repo: None,
@@ -279,11 +290,18 @@ impl App {
                     self.repo_list.selected_repo(),
                     self.dispatch_form.workflow.as_ref(),
                 ) {
+                    let repo_name = repo.full_name.clone();
+                    let wf_name = wf.name.clone();
                     let ref_name = self.dispatch_form.ref_input.value().to_string();
-                    match gh::dispatch_workflow(&repo.full_name, &wf.name, &ref_name, values) {
+                    let input_values = values.clone();
+                    match gh::dispatch_workflow(&repo_name, &wf_name, &ref_name, &input_values) {
                         Ok(()) => {
-                            let wf_name = wf.name.clone();
-                            let repo_name = repo.full_name.clone();
+                            self.last_dispatch = Some(LastDispatch {
+                                repo_full_name: repo_name.clone(),
+                                workflow_name: wf_name.clone(),
+                                ref_name,
+                                inputs: input_values,
+                            });
                             self.dispatch_form.close();
                             self.status_message = Some(format!("Dispatched '{}'", wf_name));
                             // Switch to runs tab
@@ -299,6 +317,43 @@ impl App {
                             self.dispatch_form.error_msg = Some(format!("Dispatch failed: {}", e));
                         }
                     }
+                }
+            }
+            Action::RerunLastWorkflow => {
+                if let Some(last_dispatch) = self.last_dispatch.clone() {
+                    match gh::dispatch_workflow(
+                        &last_dispatch.repo_full_name,
+                        &last_dispatch.workflow_name,
+                        &last_dispatch.ref_name,
+                        &last_dispatch.inputs,
+                    ) {
+                        Ok(()) => {
+                            let is_current_repo = self
+                                .repo_list
+                                .selected_repo()
+                                .map(|repo| repo.full_name == last_dispatch.repo_full_name)
+                                .unwrap_or(false);
+
+                            self.status_message = Some(format!(
+                                "Reran '{}' in {}",
+                                last_dispatch.workflow_name, last_dispatch.repo_full_name
+                            ));
+                            self.run_cache.remove(&last_dispatch.repo_full_name);
+
+                            if is_current_repo {
+                                self.active_tab = MainTab::Runs;
+                                self.run_list.focused = self.focus == Focus::Main;
+                                self.workflow_list.focused = false;
+                                self.load_runs_for_selected();
+                            }
+                        }
+                        Err(e) => {
+                            self.status_message = Some(format!("Rerun failed: {}", e));
+                        }
+                    }
+                } else {
+                    self.status_message =
+                        Some("No previous workflow dispatch to rerun".to_string());
                 }
             }
             Action::Refresh => {
@@ -481,7 +536,7 @@ impl App {
         let status_text = self
             .status_message
             .as_deref()
-            .unwrap_or("q: quit | a: add repo | Tab: switch tab | r: refresh");
+            .unwrap_or("q: quit | a: add repo | Tab: switch tab | r: refresh | R: rerun last");
         let status = Paragraph::new(Line::from(vec![
             Span::styled(" ", Style::default()),
             Span::styled(status_text, Style::default().fg(Color::DarkGray)),

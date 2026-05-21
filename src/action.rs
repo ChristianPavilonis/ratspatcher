@@ -28,6 +28,8 @@ pub enum Action {
     OpenDispatchForm(usize),
     /// Dispatch a workflow (workflow index, Vec of (key, value) pairs)
     DispatchWorkflow(usize, Vec<(String, String)>),
+    /// Dispatch the last successful workflow again with the same repo/ref/inputs
+    RerunLastWorkflow,
     /// Refresh the current view's data
     Refresh,
     /// Navigate up in a list
